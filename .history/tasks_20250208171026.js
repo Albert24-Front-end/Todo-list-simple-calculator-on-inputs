@@ -1,0 +1,28 @@
+export const base = {
+    employee: "",
+    todo: getToDoLS(),
+    check(id) {
+        for (let i = 0; i < base.todo.length; i++) {
+            base.todo[i].id === id;
+            base.todo[i].ready = true;
+        }
+        console.log(id);
+    },
+    addToDo( author, post ) {
+        const todo = {
+            id: 'td' + (base.todo.length + 1),
+            author,
+            post,
+            ready: false,
+        };
+        base.todo.push(todo);
+        return todo;;
+    },
+    getToDoLS() {
+        if(localStorage.getItem('todo', JSON.parse(base.todo))) {
+            return JSON.parse(localStorage.getItem('todo'))
+        }
+        return [];
+    },
+    // check & addToDo - методы объекта base
+};

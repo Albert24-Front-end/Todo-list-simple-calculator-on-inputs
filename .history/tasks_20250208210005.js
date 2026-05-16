@@ -1,0 +1,95 @@
+import { getToDoLS } from "./script.js";
+export const base = {
+    employee: "",
+    todo: getToDoLS(),
+    check(id) {
+        for (let i = 0; i < base.todo.length; i++) {
+            base.todo[i].id === id;
+            base.todo[i].ready = true;
+        }
+        console.log(id);
+    },
+    addToDo( author, post ) {
+        const todo = {
+            id: 'td' + (base.todo.length + 1),
+            author,
+            post,
+            ready: false,
+        };
+        base.todo.push(todo);
+        return todo;
+    },
+    // check & addToDo - методы объекта base
+};
+
+const todoForm = document.querySelector('#form-todo');
+const author = document.querySelector('#author');
+const post = document.querySelector('#post');
+const todoList = document.querySelector('.todo__list');
+
+function addToDo(event) {
+    event.preventDefault();
+
+    const authorText = author.value;
+    const postText = post.value;
+
+    const objToDo = base.addToDo( authorText, postText );
+
+    const todoLi = createToDo(objToDo);
+
+    todoList.append(todoLi);
+    setToDoLS();
+    todoForm.reset();
+};
+
+function createToDo(objToDo) {
+    const todoItem = document.createElement('li');
+    todoItem.classList.add('todo__list-item');
+
+    todoItem.innerHTML = `
+         <article class="post ${objToDo.ready ? "post__complete" : ""}">
+            <h3 class="post__author">${objToDo.author}</h3>
+            <p class="post__todo">${objToDo.post}</p>
+            ${!objToDo.ready ? `<button class="post__ready" type="button" data-id="${objToDo.id}">✔</button>` : ""}
+        </article>
+    `;
+
+   return todoItem;
+};
+
+function renderToDo() {
+    for (let i = 0; i < base.todo.length; i++) {
+        const toDoLi = createToDo(base.todo[i]);
+        todoList.append(toDoLi);
+    };
+};
+
+function checkToDo(event) {
+    const button = event.target.closest('.post__ready');
+    if(button) {
+        const post = button.closest('.post');
+        post.classList.add('post__complete');
+        button.remove();
+        const id = button.dataset.id;
+        base.check(id);
+        setToDoLS();
+    }
+    console.log(base.todo);
+};
+
+export function getToDoLS() {
+    if(localStorage.getItem('todo', JSON.parse(base.todo))) {
+        return JSON.parse(localStorage.getItem('todo'))
+    }
+    return [];
+};
+
+function setToDoLS() {
+    localStorage.setItem('todo', JSON.stringify(base.todo));
+};
+
+renderToDo();
+
+todoForm.addEventListener('submit', addToDo);
+
+todoList.addEventListener('click', checkToDo);

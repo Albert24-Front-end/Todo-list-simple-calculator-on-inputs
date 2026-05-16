@@ -1,0 +1,4 @@
+const base = {
+    employee: "",
+    todo: [],
+}

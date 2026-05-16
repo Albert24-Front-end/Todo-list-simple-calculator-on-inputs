@@ -1,0 +1,107 @@
+import { base, setToDoLS } from './tasks.js';
+
+const todoForm = document.querySelector('#form-todo');
+const author = document.querySelector('#author');
+const post = document.querySelector('#post');
+const todoList = document.querySelector('.todo__list');
+
+function addToDo(event) {
+    event.preventDefault();
+
+    const authorText = author.value;
+    const postText = post.value;
+
+    if (!authorText || !postText) return;
+
+    const objToDo = base.addToDo( authorText, postText );
+
+    const todoLi = createToDo(objToDo);
+
+    todoList.append(todoLi);
+    setToDoLS();
+    countToDo();
+    todoForm.reset();
+};
+
+function createToDo(objToDo) {
+    const todoItem = document.createElement('li');
+    todoItem.classList.add('todo__list-item');
+
+    todoItem.innerHTML = `
+         <article class="post ${objToDo.ready ? "post__complete" : ""}">
+            <h3 class="post__author">${objToDo.author}</h3>
+            <p class="post__todo">${objToDo.post}</p>
+            ${!objToDo.ready ? `<button class="post__ready" type="button" data-id="${objToDo.id}">✔</button>` :
+                `<button class="post__delete" type="button" data-id="${objToDo.id}"><i class='bx bx-x'></i></button>`}
+        </article>
+    `;
+
+//    countToDo();
+   return todoItem;
+};
+
+function renderToDo() {
+    todoList.innerHTML = "";
+    for (let i = 0; i < base.todo.length; i++) {
+        const toDoLi = createToDo(base.todo[i]);
+        todoList.append(toDoLi);
+    };
+};
+
+function checkToDo(event) {
+    const button = event.target.closest('.post__ready');
+    if(button) {
+        const post = button.closest('.post');
+        post.classList.add('post__complete');
+
+        const id = button.dataset.id;
+        base.check(id);
+        setToDoLS();
+        countToDo();
+
+        button.remove();
+
+
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('post__delete');
+        deleteButton.innerHTML = `<i class='bx bx-x'></i>`;
+        deleteButton.dataset.id = id;
+        post.appendChild(deleteButton);
+    }
+    // console.log(base.todo);
+};
+
+function countToDo() {
+    const count = document.querySelector('.todo__count');
+    if (!count) return;
+    const uncompletedTasksAmount = base.todo.filter(todo => !todo.ready).length;
+    count.textContent = uncompletedTasksAmount;
+};
+
+function deleteToDo(event) {
+    const button = event.target.closest('.post__delete');
+    if (button) {
+        const id = button.dataset.id;
+
+        // Удаляем дело из массива
+        base.todo = base.todo.filter(todo => todo.id !== id);
+
+        // Обновляем localStorage
+        setToDoLS();
+
+        // Удаляем дело из списка
+        const todoItem = button.closest('.todo__list-item');
+        todoItem.remove();
+
+        // Обновляем счетчик
+        countToDo();
+    }
+}
+renderToDo();
+countToDo();
+todoForm.addEventListener('submit', addToDo);
+
+todoList.addEventListener('click', (event) => {
+    checkToDo(event);
+    deleteToDo(event);
+});
